@@ -7,6 +7,8 @@ import Index from "./pages/Index.tsx";
 import StudyPage from "./pages/StudyPage.tsx";
 import DeckDetailPage from "./pages/DeckDetailPage.tsx";
 import CreateDeckPage from "./pages/CreateDeckPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import RegisterPage from "./pages/RegisterPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -19,6 +21,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/study/:deckId" element={<StudyPage />} />
           <Route path="/deck/:deckId" element={<DeckDetailPage />} />
           <Route path="/create" element={<CreateDeckPage />} />

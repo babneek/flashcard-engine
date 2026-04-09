@@ -22,3 +22,30 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+!.env.example
+
+# Uploads and logs
+backend/uploads/*.pdf
+backend/logs/*.json
+
+# Kiro
+.kiro/
