@@ -32,7 +32,9 @@ An intelligent flashcard application that transforms PDFs into comprehensive stu
 - Node.js 16+
 - Groq API Key ([Get one free](https://console.groq.com))
 
-### Backend Setup
+### Local Development
+
+#### Backend Setup
 
 ```bash
 cd backend
@@ -70,6 +72,16 @@ npm run dev
 ```
 
 Frontend will be available at `http://localhost:8080`
+
+## 🌐 Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+**Quick Deploy:**
+- **Backend**: Deploy to [Render](https://render.com) (Free tier available)
+- **Frontend**: Deploy to [Vercel](https://vercel.com) (Free tier available)
+
+Total cost: **$0/month** on free tiers!
 
 ## 🔑 Test Credentials
 

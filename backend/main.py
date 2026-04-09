@@ -7,17 +7,17 @@ from routes.decks import router as decks_router
 from routes.cards import router as cards_router
 from routes.stats import router as stats_router
 from routes.progress import router as progress_router
-from config import FRONTEND_URL, UPLOAD_DIR
+from config import ALLOWED_ORIGINS, UPLOAD_DIR
 
 app = FastAPI(title="Flashcard Engine API", version="1.0.0")
 
 # Serve uploaded PDFs
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# CORS
+# CORS - Allow frontend origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:8080", "http://localhost:5173", "http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

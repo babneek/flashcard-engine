@@ -18,6 +18,15 @@ PAGEINDEX_API_KEY = os.getenv("PAGEINDEX_API_KEY", "")
 
 # CORS
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
+ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://localhost:5173",
+    FRONTEND_URL,
+]
+
+# Add Vercel preview URLs if FRONTEND_URL contains vercel.app
+if "vercel.app" in FRONTEND_URL:
+    ALLOWED_ORIGINS.append("https://*.vercel.app")
 
 # File upload
 MAX_PDF_SIZE_MB = 10
