@@ -11,7 +11,7 @@ from routes.auth import get_user_from_token
 from services.pdf_processor import save_uploaded_pdf, extract_text_from_pdf
 from services.rag_engine import generate_cards_with_rag
 from services.card_generator import generate_cards_from_text
-from config import MAX_PDF_SIZE_MB
+from config import MAX_PDF_SIZE_MB, GROQ_API_KEY
 import json
 
 router = APIRouter(prefix="/decks", tags=["Decks"])
@@ -130,6 +130,23 @@ async def upload_pdf(
         print(f"{'='*60}")
         print(f"Subject: {subject.upper()}")
         print(f"Total words: {len(text.split())}")
+        print(f"GROQ_API_KEY set: {bool(GROQ_API_KEY)}")
+        if GROQ_API_KEY:
+            print(f"GROQ_API_KEY prefix: {GROQ_API_KEY[:12]}...")
+        
+        # Test Groq before full generation
+        try:
+            from groq import Groq
+            test_client = Groq(api_key=GROQ_API_KEY)
+            test_resp = test_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": "Reply with just: OK"}],
+                max_tokens=5,
+            )
+            print(f"✅ Groq test call succeeded: {test_resp.choices[0].message.content}")
+        except Exception as groq_test_err:
+            print(f"❌ Groq test call FAILED: {groq_test_err}")
+            raise HTTPException(status_code=500, detail=f"Groq API error: {str(groq_test_err)}")
         
         # Generate cards using RAG
         all_cards = generate_cards_with_rag(text, subject=subject, cards_per_chunk=10)
