@@ -75,13 +75,25 @@ Frontend will be available at `http://localhost:8080`
 
 ## 🌐 Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+### Backend (Render)
+1. Create a new Web Service on [Render](https://render.com)
+2. Connect your GitHub repository
+3. Configure:
+   - **Root Directory**: `backend`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4. Add environment variables:
+   - `GROQ_API_KEY` - Your Groq API key
+   - `JWT_SECRET` - A secure random string
+   - `FRONTEND_URL` - Your Vercel frontend URL
 
-**Quick Deploy:**
-- **Backend**: Deploy to [Render](https://render.com) (Free tier available)
-- **Frontend**: Deploy to [Vercel](https://vercel.com) (Free tier available)
-
-Total cost: **$0/month** on free tiers!
+### Frontend (Vercel)
+1. Import project on [Vercel](https://vercel.com)
+2. Configure:
+   - **Root Directory**: `frontend`
+   - **Framework**: Vite
+3. Add environment variable:
+   - `VITE_API_URL` - Your Render backend URL
 
 ## 🔑 Test Credentials
 
