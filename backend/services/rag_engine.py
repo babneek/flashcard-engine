@@ -235,8 +235,8 @@ def generate_cards_with_rag(text: str, subject: str = "general", cards_per_chunk
     # Initialize RAG engine
     rag = SimpleRAGEngine()
     
-    # Index document with semantic chunking (larger chunks for better context)
-    index_result = rag.index_document(text, chunk_size=600)
+    # Index document with semantic chunking (larger chunks = fewer API calls = faster)
+    index_result = rag.index_document(text, chunk_size=800)
     
     print(f"\n🎯 RAG Indexing Complete:")
     print(f"  • Chunks: {index_result['chunk_count']}")

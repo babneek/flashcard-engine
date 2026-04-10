@@ -8,6 +8,7 @@ from routes.decks import router as decks_router
 from routes.cards import router as cards_router
 from routes.stats import router as stats_router
 from routes.progress import router as progress_router
+from routes.jobs import router as jobs_router
 from config import ALLOWED_ORIGINS, UPLOAD_DIR
 
 app = FastAPI(title="Flashcard Engine API", version="1.0.0")
@@ -32,6 +33,7 @@ app.include_router(decks_router)
 app.include_router(cards_router)
 app.include_router(stats_router)
 app.include_router(progress_router)
+app.include_router(jobs_router)
 
 
 @app.on_event("startup")

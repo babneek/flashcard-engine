@@ -80,38 +80,68 @@ export async function apiUploadPdf(deckId: string, file: File, subject: string =
   formData.append("file", file);
   formData.append("subject", subject);
 
-  // Use a long timeout for PDF processing (5 minutes)
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+  // Start the upload (returns immediately with job_id)
+  const uploadRes = await fetch(`${API_BASE}/decks/${deckId}/upload-pdf`, {
+    method: "POST",
+    headers: { ...authHeaders() },
+    body: formData,
+  });
 
-  try {
-    const res = await fetch(`${API_BASE}/decks/${deckId}/upload-pdf`, {
-      method: "POST",
+  if (uploadRes.status === 401) {
+    localStorage.removeItem("fc_token");
+    localStorage.removeItem("fc_user");
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+
+  if (!uploadRes.ok) {
+    const body = await uploadRes.json().catch(() => ({ detail: "Request failed" }));
+    throw new Error(body.detail || `Error ${uploadRes.status}`);
+  }
+
+  const { job_id } = await uploadRes.json();
+
+  // Poll for job completion
+  return pollJobStatus(job_id);
+}
+
+async function pollJobStatus(jobId: string): Promise<{ deck_id: string; cards_generated: number; sample_cards: any[]; subject: string; rag_enabled: boolean }> {
+  const maxAttempts = 120; // 10 minutes max (5 second intervals)
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+    const statusRes = await fetch(`${API_BASE}/jobs/${jobId}`, {
       headers: { ...authHeaders() },
-      body: formData,
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
-    if (res.status === 401) {
+    if (statusRes.status === 401) {
       localStorage.removeItem("fc_token");
       localStorage.removeItem("fc_user");
       window.location.href = "/login";
       throw new Error("Unauthorized");
     }
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({ detail: "Request failed" }));
-      throw new Error(body.detail || `Error ${res.status}`);
+    if (!statusRes.ok) {
+      throw new Error("Failed to check job status");
     }
 
-    return res.json() as Promise<{ deck_id: string; cards_generated: number; sample_cards: any[]; subject: string; rag_enabled: boolean }>;
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    if (err.name === "AbortError") throw new Error("Request timed out. PDF may be too large.");
-    throw err;
+    const job = await statusRes.json();
+
+    if (job.status === "completed") {
+      return job.result;
+    }
+
+    if (job.status === "failed") {
+      throw new Error(job.error || "PDF processing failed");
+    }
+
+    // Still processing, continue polling
+    attempts++;
   }
+
+  throw new Error("PDF processing timed out");
 }
 
 export async function apiGenerateFromTopic(deckId: string) {
