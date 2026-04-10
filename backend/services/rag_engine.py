@@ -20,6 +20,12 @@ class SimpleRAGEngine:
         
     def _get_embedding_model(self):
         """Lazy load embedding model only when needed."""
+        # Skip embeddings on low-memory environments
+        import os
+        if os.getenv("SKIP_EMBEDDINGS", "false").lower() == "true":
+            print("⚠ Skipping embeddings (SKIP_EMBEDDINGS=true) - using simple chunking")
+            return None
+            
         if self.model is None:
             try:
                 from sentence_transformers import SentenceTransformer
