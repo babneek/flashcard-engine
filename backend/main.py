@@ -42,6 +42,7 @@ def on_startup():
 
 
 @app.get("/")
+@app.head("/")
 def root():
     return {"message": "Flashcard Engine API", "version": "1.0.0"}
 

@@ -22,14 +22,15 @@ ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
     "http://localhost:3000",
+    "https://flashcard-engine-lac.vercel.app",  # Production frontend
 ]
 
-# Add frontend URL if provided
+# Add frontend URL if provided and not already in list
 if FRONTEND_URL and FRONTEND_URL not in ALLOWED_ORIGINS:
     ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 # For development: allow all origins if FRONTEND_URL is localhost
-if "localhost" in FRONTEND_URL or not FRONTEND_URL:
+if "localhost" in FRONTEND_URL:
     ALLOWED_ORIGINS.append("*")
 
 # File upload
