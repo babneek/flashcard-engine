@@ -80,14 +80,38 @@ export async function apiUploadPdf(deckId: string, file: File, subject: string =
   formData.append("file", file);
   formData.append("subject", subject);
 
-  return apiFetch<{ deck_id: string; cards_generated: number; sample_cards: any[]; subject: string; rag_enabled: boolean }>(
-    `/decks/${deckId}/upload-pdf`,
-    {
+  // Use a long timeout for PDF processing (5 minutes)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+
+  try {
+    const res = await fetch(`${API_BASE}/decks/${deckId}/upload-pdf`, {
       method: "POST",
+      headers: { ...authHeaders() },
       body: formData,
-      // Don't set Content-Type – browser will set multipart boundary
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (res.status === 401) {
+      localStorage.removeItem("fc_token");
+      localStorage.removeItem("fc_user");
+      window.location.href = "/login";
+      throw new Error("Unauthorized");
     }
-  );
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ detail: "Request failed" }));
+      throw new Error(body.detail || `Error ${res.status}`);
+    }
+
+    return res.json() as Promise<{ deck_id: string; cards_generated: number; sample_cards: any[]; subject: string; rag_enabled: boolean }>;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError") throw new Error("Request timed out. PDF may be too large.");
+    throw err;
+  }
 }
 
 export async function apiGenerateFromTopic(deckId: string) {

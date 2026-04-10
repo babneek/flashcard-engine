@@ -52,7 +52,7 @@ const CreateDeckPage = () => {
 
       if (selectedFile) {
         // Step 2a: Upload PDF and generate cards with subject
-        setStatus('Uploading PDF and generating cards...');
+        setStatus('Uploading PDF and generating cards with AI... (this takes 2-5 minutes for large PDFs)');
         const result = await apiUploadPdf(deck.id, selectedFile, subject);
         setCardsGenerated(result.cards_generated);
         setStatus(`✨ Generated ${result.cards_generated} cards from your PDF!`);
@@ -73,8 +73,8 @@ const CreateDeckPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-blue-900/20">
+      <header className="border-b-2 border-purple-200 dark:border-purple-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
@@ -84,81 +84,91 @@ const CreateDeckPage = () => {
 
       <main className="container mx-auto px-6 py-12 max-w-xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-heading font-bold mb-2">Create New Deck</h1>
-          <p className="text-muted-foreground mb-8">Upload a PDF or enter a topic to generate flashcards</p>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Deck Name</Label>
-              <Input
-                id="name"
-                placeholder="e.g. Organic Chemistry"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-11"
-              />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
+            <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              Create New Deck
+            </h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 ml-1">Upload a PDF or enter a topic to generate flashcards</p>
 
-            <div className="space-y-2">
-              <Label htmlFor="desc">Description</Label>
-              <Input
-                id="desc"
-                placeholder="What's this deck about?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="h-11"
-              />
-            </div>
+          <Card className="border-2 border-purple-200 dark:border-purple-800 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+            <CardContent className="p-8 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="font-semibold text-gray-700 dark:text-gray-300">Deck Name</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Organic Chemistry"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-11 border-2 focus:border-purple-400"
+                />
+              </div>
 
-            {/* Subject Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <select
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="general">General</option>
-                <option value="history">History</option>
-                <option value="mathematics">Mathematics</option>
-                <option value="science">Science</option>
-              </select>
-              <p className="text-xs text-muted-foreground">
-                Choose the subject to get optimized flashcard questions
-              </p>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="desc" className="font-semibold text-gray-700 dark:text-gray-300">Description</Label>
+                <Input
+                  id="desc"
+                  placeholder="What's this deck about?"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="h-11 border-2 focus:border-purple-400"
+                />
+              </div>
 
-            {/* PDF Upload */}
-            <div className="space-y-2">
-              <Label>Upload PDF (optional)</Label>
-              <Card
-                className={`border-dashed border-2 transition-all duration-300 cursor-pointer ${
-                  selectedFile
-                    ? 'border-primary/50 bg-primary/5'
-                    : 'hover:border-primary/30 hover:bg-muted/30'
-                }`}
-              >
-                <CardContent className="p-8 text-center">
-                  <label htmlFor="pdf-upload" className="cursor-pointer">
+              {/* Subject Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="subject" className="font-semibold text-gray-700 dark:text-gray-300">Subject</Label>
+                <select
+                  id="subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="flex h-11 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/20"
+                >
+                  <option value="general">📚 General</option>
+                  <option value="history">🏛️ History</option>
+                  <option value="mathematics">📐 Mathematics</option>
+                  <option value="science">🔬 Science</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Choose the subject to get optimized flashcard questions
+                </p>
+              </div>
+
+              {/* PDF Upload */}
+              <div className="space-y-2">
+                <Label className="font-semibold text-gray-700 dark:text-gray-300">Upload PDF (optional)</Label>
+                <label htmlFor="pdf-upload" className="cursor-pointer block">
+                  <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+                    selectedFile
+                      ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                      : 'border-purple-200 dark:border-purple-700 hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/10'
+                  }`}>
                     {selectedFile ? (
                       <div className="flex flex-col items-center gap-2">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-primary" />
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                          <FileText className="w-7 h-7 text-white" />
                         </div>
-                        <p className="text-sm font-medium text-foreground">{selectedFile.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">{selectedFile.name}</p>
+                        <p className="text-xs text-gray-500">
                           {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
                         </p>
+                        <span className="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full font-medium">
+                          ✓ Ready to upload
+                        </span>
                       </div>
                     ) : (
-                      <>
-                        <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                        <p className="text-sm font-medium">Drop a PDF here or click to browse</p>
-                        <p className="text-xs text-muted-foreground mt-1">PDF files up to 10MB</p>
-                      </>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 flex items-center justify-center">
+                          <Upload className="w-7 h-7 text-purple-500" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Drop a PDF here or click to browse</p>
+                        <p className="text-xs text-gray-500">PDF files up to 10MB</p>
+                      </div>
                     )}
-                  </label>
+                  </div>
                   <input
                     id="pdf-upload"
                     type="file"
@@ -166,55 +176,55 @@ const CreateDeckPage = () => {
                     className="hidden"
                     onChange={handleFileSelect}
                   />
-                </CardContent>
-              </Card>
-            </div>
+                </label>
+              </div>
 
-            {/* Status message */}
-            {status && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                  status.startsWith('Error')
-                    ? 'bg-destructive/10 text-destructive'
-                    : status.startsWith('✨')
-                    ? 'bg-accent/10 text-accent-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                {status.startsWith('✨') ? (
-                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
-                ) : generating ? (
-                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                ) : null}
-                {status}
-              </motion.div>
-            )}
-
-            <Button
-              className="w-full h-12 gap-2 text-base"
-              size="lg"
-              onClick={handleCreate}
-              disabled={!name.trim() || generating}
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Generating Cards...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" /> Generate Flashcards
-                </>
+              {/* Status message */}
+              {status && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex items-center gap-2 p-4 rounded-xl text-sm font-medium ${
+                    status.startsWith('Error')
+                      ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-2 border-red-200 dark:border-red-800'
+                      : status.startsWith('✨')
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-200 dark:border-green-800'
+                      : 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-2 border-purple-200 dark:border-purple-800'
+                  }`}
+                >
+                  {status.startsWith('✨') ? (
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  ) : generating ? (
+                    <Loader2 className="w-5 h-5 animate-spin shrink-0" />
+                  ) : null}
+                  {status}
+                </motion.div>
               )}
-            </Button>
 
-            <p className="text-xs text-center text-muted-foreground">
-              {selectedFile
-                ? 'Cards will be generated from your PDF content using AI.'
-                : 'Cards will be generated based on the topic name. Upload a PDF for more specific cards.'}
-            </p>
-          </div>
+              <Button
+                className="w-full h-12 gap-2 text-base font-semibold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all"
+                size="lg"
+                onClick={handleCreate}
+                disabled={!name.trim() || generating}
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" /> Generating Cards...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" /> Generate Flashcards
+                  </>
+                )}
+              </Button>
+
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                {selectedFile
+                  ? '🤖 AI will generate comprehensive flashcards from your PDF content.'
+                  : '💡 Upload a PDF for better, more specific cards.'}
+              </p>
+            </CardContent>
+          </Card>
         </motion.div>
       </main>
     </div>
