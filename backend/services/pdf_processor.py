@@ -6,18 +6,31 @@ from config import UPLOAD_DIR, GROQ_API_KEY, OPENAI_API_KEY
 import sys
 from pathlib import Path
 
-# Add local PageIndex to path (prioritize it over installed package)
-LIB_PATH = str(Path(__file__).parent.parent / "libs" / "PageIndex")
-if LIB_PATH not in sys.path:
-    sys.path.insert(0, LIB_PATH)
+# PageIndex is optional - only used if available
+PAGEINDEX_AVAILABLE = False
+try:
+    # Add local PageIndex to path (prioritize it over installed package)
+    LIB_PATH = str(Path(__file__).parent.parent / "libs" / "PageIndex")
+    if LIB_PATH not in sys.path:
+        sys.path.insert(0, LIB_PATH)
+    
+    from pageindex import page_index_main
+    from pageindex.utils import ConfigLoader
+    PAGEINDEX_AVAILABLE = True
+except ImportError:
+    print("⚠ PageIndex not available, using fallback PDF processing")
 
-from pageindex import page_index_main
-from pageindex.utils import ConfigLoader
 from services.topic_extractor import organize_content_by_topics
 
 
 def index_pdf_with_pageindex(file_path: str) -> str:
     """
+    Uses PageIndex to index the PDF (if available).
+    Falls back to simple extraction if PageIndex is not installed.
+    """
+    if not PAGEINDEX_AVAILABLE:
+        print("⚠ PageIndex not available, skipping indexing")
+        return None
     Uses the CLONED PageIndex repository to index the PDF locally.
     Saves the structure to a JSON file and returns the path.
     """
