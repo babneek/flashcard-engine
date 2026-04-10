@@ -330,11 +330,11 @@ def _generate_rule_based(text: str, topic_context: str = None, subject: str = "g
         return cards
 
     card_templates = [
-        ("definition", "Define: {topic}", "{detail}"),
-        ("formula", "What is the formula for {topic}?", "{detail}"),
-        ("concept", "Explain the concept of {topic}.", "{detail}"),
-        ("example", "Give an example/solved problem for: {topic}", "{detail}"),
-        ("practice", "Solve this challenge related to {topic}", "Answer: {detail}"),
+        ("definition", "beginner", "Define: {topic}", "{detail}"),
+        ("formula", "beginner", "What is the formula for {topic}?", "{detail}"),
+        ("concept", "intermediate", "Explain the concept of {topic}.", "{detail}"),
+        ("example", "intermediate", "Give an example/solved problem for: {topic}", "{detail}"),
+        ("practice", "advanced", "Solve this challenge related to {topic}", "Answer: {detail}"),
     ]
 
     for i, sentence in enumerate(sentences[:12]):
@@ -349,7 +349,7 @@ def _generate_rule_based(text: str, topic_context: str = None, subject: str = "g
             topic = " ".join(words[:min(6, len(words))])
             
         template_idx = i % len(card_templates)
-        card_type, front_tmpl, back_tmpl = card_templates[template_idx]
+        card_type, difficulty, front_tmpl, back_tmpl = card_templates[template_idx]
 
         # Format both front and back with available data
         front = front_tmpl.format(topic=topic)
@@ -359,6 +359,7 @@ def _generate_rule_based(text: str, topic_context: str = None, subject: str = "g
             "front": front,
             "back": back,
             "type": card_type,
+            "difficulty": difficulty
         })
 
     summary_text = ". ".join(sentences[:3])
@@ -366,6 +367,7 @@ def _generate_rule_based(text: str, topic_context: str = None, subject: str = "g
         "front": f"What are the main topics covered{f' in {topic_context}' if topic_context else ''}?",
         "back": summary_text[:400],
         "type": "concept",
+        "difficulty": "intermediate"
     })
 
     return cards[:12]
@@ -391,6 +393,7 @@ def _parse_cards_json(content: str) -> list[dict]:
         front = card.get("front", "").strip()
         back = card.get("back", "").strip()
         card_type = card.get("type", "concept")
+        difficulty = card.get("difficulty", "intermediate")
 
         if len(front) < 10 or len(back) < 10:
             continue
@@ -398,9 +401,21 @@ def _parse_cards_json(content: str) -> list[dict]:
             front = front[:500]
             back = back[:500]
 
-        if card_type not in ("definition", "concept", "example", "formula", "practice", "edge_case", "application"):
+        # Validate card type
+        valid_types = ["definition", "concept", "example", "formula", "practice", "timeline", 
+                      "people", "cause-effect", "analysis", "fact", "process", "experiment", "edge_case", "application"]
+        if card_type not in valid_types:
             card_type = "concept"
+        
+        # Validate difficulty
+        if difficulty not in ["beginner", "intermediate", "advanced"]:
+            difficulty = "intermediate"
 
-        valid_cards.append({"front": front, "back": back, "type": card_type})
+        valid_cards.append({
+            "front": front, 
+            "back": back, 
+            "type": card_type,
+            "difficulty": difficulty
+        })
 
     return valid_cards
