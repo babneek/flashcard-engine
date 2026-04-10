@@ -1,17 +1,16 @@
 """
 RAG (Retrieval-Augmented Generation) Engine for Flashcard Generation
-Uses sentence transformers for embeddings and semantic chunking
+Uses semantic chunking for better card generation
 """
 import re
 from typing import List, Dict, Tuple
-import numpy as np
 from config import GROQ_API_KEY
 
 
 class SimpleRAGEngine:
     """
-    Lightweight RAG engine without external vector DB dependencies.
-    Uses semantic sentence splitting and in-memory similarity search.
+    Lightweight RAG engine without external dependencies.
+    Uses semantic sentence splitting for better chunking.
     """
     
     def __init__(self):
@@ -24,6 +23,7 @@ class SimpleRAGEngine:
         if self.model is None:
             try:
                 from sentence_transformers import SentenceTransformer
+                import numpy as np
                 # Use a lightweight, fast model
                 self.model = SentenceTransformer('all-MiniLM-L6-v2')
                 print("✓ Loaded embedding model: all-MiniLM-L6-v2")
@@ -91,7 +91,7 @@ class SimpleRAGEngine:
         
         return chunks
     
-    def create_embeddings(self, chunks: List[str]) -> np.ndarray:
+    def create_embeddings(self, chunks: List[str]):
         """
         Create embeddings for text chunks.
         Falls back to None if embedding model unavailable.
@@ -101,6 +101,7 @@ class SimpleRAGEngine:
             return None
         
         try:
+            import numpy as np
             embeddings = model.encode(chunks, show_progress_bar=False)
             return np.array(embeddings)
         except Exception as e:
@@ -147,6 +148,7 @@ class SimpleRAGEngine:
             return [(chunk, 1.0) for chunk in self.chunks]
         
         try:
+            import numpy as np
             # Encode query
             query_embedding = self.model.encode([query])[0]
             
@@ -175,11 +177,13 @@ class SimpleRAGEngine:
             return {"chunk_count": 0, "avg_words": 0, "total_words": 0}
         
         word_counts = [len(chunk.split()) for chunk in self.chunks]
+        avg_words = sum(word_counts) // len(word_counts) if word_counts else 0
+        
         return {
             "chunk_count": len(self.chunks),
-            "avg_words": int(np.mean(word_counts)),
-            "min_words": min(word_counts),
-            "max_words": max(word_counts),
+            "avg_words": avg_words,
+            "min_words": min(word_counts) if word_counts else 0,
+            "max_words": max(word_counts) if word_counts else 0,
             "total_words": sum(word_counts)
         }
 
