@@ -65,7 +65,13 @@ def debug_config():
     }
 
 
-@app.get("/debug/test-groq")
+@app.delete("/admin/reset-db")
+def reset_db():
+    """Drop and recreate all tables - clears all data."""
+    from database.connection import Base, engine
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    return {"status": "ok", "message": "Database cleared and recreated"}
 def test_groq():
     """Test Groq API connection directly."""
     from config import GROQ_API_KEY
