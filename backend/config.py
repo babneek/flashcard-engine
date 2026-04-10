@@ -21,12 +21,16 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
 ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
-    FRONTEND_URL,
+    "http://localhost:3000",
 ]
 
-# Add Vercel preview URLs if FRONTEND_URL contains vercel.app
-if "vercel.app" in FRONTEND_URL:
-    ALLOWED_ORIGINS.append("https://*.vercel.app")
+# Add frontend URL if provided
+if FRONTEND_URL and FRONTEND_URL not in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS.append(FRONTEND_URL)
+
+# For development: allow all origins if FRONTEND_URL is localhost
+if "localhost" in FRONTEND_URL or not FRONTEND_URL:
+    ALLOWED_ORIGINS.append("*")
 
 # File upload
 MAX_PDF_SIZE_MB = 10
