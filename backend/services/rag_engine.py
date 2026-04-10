@@ -24,11 +24,17 @@ class SimpleRAGEngine:
             try:
                 from sentence_transformers import SentenceTransformer
                 import numpy as np
-                # Use a lightweight, fast model
+                # Use a very lightweight, fast model that works on CPU
+                # all-MiniLM-L6-v2: 80MB, very fast, good quality
                 self.model = SentenceTransformer('all-MiniLM-L6-v2')
-                print("✓ Loaded embedding model: all-MiniLM-L6-v2")
-            except ImportError:
-                print("⚠ sentence-transformers not installed, using fallback chunking")
+                print("✓ Loaded embedding model: all-MiniLM-L6-v2 (80MB)")
+            except ImportError as e:
+                print(f"⚠ sentence-transformers not installed: {e}")
+                print("⚠ Using fallback chunking without embeddings")
+                return None
+            except Exception as e:
+                print(f"⚠ Failed to load embedding model: {e}")
+                print("⚠ Using fallback chunking without embeddings")
                 return None
         return self.model
     
