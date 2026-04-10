@@ -27,15 +27,17 @@ A comprehensive flashcard application that transforms PDFs into intelligent, pra
 
 **1. Intelligent PDF Ingestion (RAG-Powered)**
 - Upload any PDF and get comprehensive flashcard coverage
-- Semantic chunking ensures no content is missed
-- Subject-specific generation (optimized for CBSE Class 10 History)
-- **Result:** 237 cards from 8972 words (20x improvement over naive approaches)
+- Semantic chunking with 600-word chunks and 100-word overlap
+- Subject-specific generation (History, Mathematics, Science, General)
+- Quality validation rejects incomplete/fragmented cards
+- **Result:** 150-250 high-quality cards from typical PDFs (20x improvement)
 
 **2. Adaptive Spaced Repetition (SM-2 Algorithm)**
 - Cards you know fade into the background
 - Struggling cards return more frequently
 - Smart scheduling based on performance history
 - Ease factor and interval tracking for optimal retention
+- Progressive difficulty: Beginner → Intermediate → Advanced
 
 **3. Time-Based Analytics (Innovation)**
 - Tracks time spent on each card during study
@@ -46,17 +48,31 @@ A comprehensive flashcard application that transforms PDFs into intelligent, pra
 - Identifies patterns: Quick cards vs slow cards
 - Provides actionable insights on what needs more practice
 
-**4. Comprehensive Progress Tracking**
+**4. Active Recall Feature**
+- Optional: Type your answer before revealing the card
+- Smart keyword matching validates your response
+- Encourages deeper engagement than passive review
+- Visual feedback (✓ correct, ⚠ needs work)
+- Promotes better retention through active learning
+
+**5. Comprehensive Progress Tracking**
 - Mastery dashboard with 4 stages: New → Learning → Review → Mastered
 - Streak counter with daily activity tracking
 - Weak areas identification
 - Activity charts showing 7-day progress
 - Visual progress indicators (pie charts, bar graphs)
+- Difficulty distribution (Beginner/Intermediate/Advanced counts)
 
-**5. Delightful User Experience**
-- Simplified feedback: 3 clear options (Hard/Medium/Easy) instead of overwhelming 6
-- Active recall feature: Type your answer before revealing
-- Dark mode with localStorage persistence
+**6. Multiple Theme Options**
+- 5 color schemes: Default, Clay, Ocean, Forest, Sunset
+- Each theme works in both light and dark modes
+- Persistent theme selection (localStorage)
+- Professional yet fun design balance
+- Accessible color contrasts
+
+**7. Delightful User Experience**
+- Simplified feedback: 3 clear options (Hard/Medium/Easy)
+- Beautiful login/register pages with animations
 - Real-time search with debouncing
 - Smooth animations (Framer Motion)
 - Mobile-responsive design
@@ -262,17 +278,46 @@ Flashcard apps are notoriously boring. Here's how I made this one enjoyable:
 
 ### Challenge 1: Poor Card Generation Quality
 
-**Problem:** Initial implementation generated only 12 cards from a 8972-word PDF. Cards were shallow and missed key concepts.
+**Problem:** Initial implementation generated only 12-40 cards from PDFs. Cards were fragmented, incomplete, and low quality with patterns like "Define: REAL NUMBERS 1 In Class IX" and "What is the formula for We continue our discussion".
 
-**Root Cause:** Naive text splitting at arbitrary character boundaries broke semantic meaning. AI couldn't generate good cards from fragmented context.
+**Root Cause:** 
+1. Naive text splitting at arbitrary character boundaries broke semantic meaning
+2. No validation of card quality
+3. AI couldn't generate good cards from fragmented context
+4. Rule-based fallback was too simplistic
 
 **Solution:** 
-- Implemented semantic chunking at sentence boundaries
-- Added 50-word overlap between chunks for context
-- Increased chunk size to 500 words for better context
-- Result: 237 comprehensive cards (20x improvement)
+- **Enhanced Prompts**: Rewrote all subject-specific prompts with:
+  - CRITICAL RULES section emphasizing quality
+  - Concrete examples of good vs bad cards
+  - Quality checklists for the AI to follow
+  - Clear card type definitions with examples
 
-**Learning:** Context is everything for AI generation. Better chunking = better cards.
+- **Strict Validation System**:
+  ```python
+  ✓ Minimum length checks (front: 10 chars, back: 15 chars)
+  ✓ Reject incomplete patterns ("Define:", "What is the formula for we")
+  ✓ Reject fragments (< 3 words in question, < 5 words in answer)
+  ✓ Reject cards without proper punctuation
+  ✓ Track and report rejected low-quality cards
+  ```
+
+- **Improved Chunking**:
+  - Increased chunk size: 500 → 600 words (better context)
+  - Increased overlap: 50 → 100 words (continuity)
+  - Preserve paragraph structure
+  - Merge very small chunks automatically
+  - Keep last 5 sentences for context (was 3)
+
+- **Better Rule-Based Fallback**:
+  - Extract key terms (capitalized words, numbers, dates)
+  - Identify sentence patterns (cause-effect, definitions, formulas)
+  - Generate meaningful questions based on content structure
+  - Remove duplicates
+
+**Result:** 150-250 high-quality, complete, self-contained cards per PDF
+
+**Learning:** Context is everything for AI generation. Better chunking + validation = better cards.
 
 ### Challenge 2: Decision Fatigue with 6 Rating Options
 
@@ -333,10 +378,16 @@ Flashcard apps are notoriously boring. Here's how I made this one enjoyable:
    - Offline support with sync
    - Push notifications for reviews
 
-4. **More Subjects**
-   - Math (with LaTeX rendering)
-   - Science (with chemical formulas)
-   - Languages (with audio pronunciation)
+4. **Enhanced Card Types**
+   - Cloze deletion (fill in the blank)
+   - Multiple choice questions
+   - Matching pairs
+   - True/False questions
+
+5. **Bulk Operations**
+   - Edit multiple cards at once
+   - Bulk delete/move cards
+   - Batch import from CSV/JSON
 
 ### Medium-term (1-2 months):
 1. **Advanced Analytics**

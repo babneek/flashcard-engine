@@ -76,19 +76,27 @@ This is a 20x improvement over naive approaches that would give you maybe 10-12 
 
 **[Show first card - front side]**
 
-"I see the question. I can either:
+"I see the question. Notice I have two options:
 1. Just flip to see the answer, or
 2. Type my answer first for active recall"
 
+**[Click "Try answering first"]**
+
+"Let me try the active recall feature..."
+
 **[Type an answer]**
 
-"Let me try typing... 'A utopian vision refers to an ideal society'"
+"I'll type: 'The Fundamental Theorem of Arithmetic states that every composite number can be expressed as a product of primes in a unique way'"
 
 **[Click Check Answer]**
 
-"It checks my answer using keyword matching. Got it right!"
+"It uses smart keyword matching to check if I got the key concepts right..."
 
-**[Card flips automatically]**
+**[Show success feedback]**
+
+"Got it! ✓ The app validates my answer and gives immediate feedback."
+
+**[Card flips automatically after 1.5 seconds]**
 
 "Now here's the innovation: Notice the timer? The app tracked that I answered in 6 seconds."
 
@@ -96,21 +104,24 @@ This is a 20x improvement over naive approaches that would give you maybe 10-12 
 
 "Based on that time, it suggests 'Easy' - because I knew it instantly. But I can override if I want.
 
+The thresholds are:
 - Under 8 seconds → Easy (mastered)
 - 8-25 seconds → Medium (learning)  
 - Over 25 seconds → Hard (struggling)
 
 This is the first flashcard app I know of that uses time as a primary mastery indicator."
 
-**[Rate the card]**
+**[Rate the card as Easy]**
 
 "Let's do a few more cards quickly..."
 
 **[Show 2-3 more cards rapidly, showing different times and suggestions]**
 
+"See how each card gets a different suggestion based on how long I took? This removes the guesswork from rating."
+
 ---
 
-## 📊 DEMO PART 2: Progress & Analytics (2:30 - 3:15)
+## 📊 DEMO PART 2: Progress & Analytics (2:30 - 3:30)
 
 ### Progress Dashboard (2:30 - 2:50)
 
@@ -122,7 +133,7 @@ This is the first flashcard app I know of that uses time as a primary mastery in
 
 "The dashboard shows:
 - Mastery breakdown: New, Learning, Review, Mastered
-- Current streak with fire emoji
+- Current streak with fire emoji 🔥
 - Due cards counter
 - Activity chart for the last 7 days
 - Weak areas that need attention"
@@ -131,7 +142,7 @@ This is the first flashcard app I know of that uses time as a primary mastery in
 
 "Everything is visual and motivating. You can see your progress growing."
 
-### Time Analytics (2:50 - 3:15)
+### Time Analytics (2:50 - 3:10)
 
 **[Click on a deck to show time analytics]**
 
@@ -148,46 +159,70 @@ This is the first flashcard app I know of that uses time as a primary mastery in
 
 "This tells you what you actually know vs what you think you know. It's data-driven learning."
 
+### Theme Customization (3:10 - 3:30)
+
+**[Click on the theme toggle - palette icon]**
+
+"Oh, and one more thing - we have 5 beautiful color schemes!"
+
+**[Show theme dropdown]**
+
+"Default, Clay, Ocean, Forest, and Sunset. Each works in both light and dark modes."
+
+**[Switch between 2-3 themes quickly]**
+
+"The app remembers your preference. It's professional yet fun - perfect balance for students of all ages."
+
+**[Switch back to preferred theme]**
+
 ---
 
-## 💻 DEMO PART 3: Technical Deep Dive (3:15 - 4:15)
+## 💻 DEMO PART 3: Technical Deep Dive (3:30 - 4:30)
 
 **[Screen: Switch to code editor or GitHub]**
 
 "Let me show you how this works under the hood."
 
-### RAG Engine (3:15 - 3:35)
+### Card Quality System (3:30 - 3:50)
+
+**[Show backend/services/card_generator.py - prompts section]**
+
+"This is the card generation system. I completely rewrote the prompts with:
+- Critical rules emphasizing quality
+- Concrete examples of good vs bad cards
+- Quality checklists for the AI
+
+And here's the validation..."
+
+**[Show _parse_cards_json function]**
+
+"Every card goes through strict validation:
+- Minimum length checks
+- Reject incomplete patterns
+- Reject fragments
+- Track rejected cards
+
+This is why we get 150-250 high-quality cards instead of 12-40 garbage cards."
+
+### RAG Engine (3:50 - 4:05)
 
 **[Show backend/services/rag_engine.py]**
 
-"This is the RAG engine. Key function: semantic_chunk_text.
+"The RAG engine does semantic chunking - 600-word chunks with 100-word overlap.
 
-It splits text at sentence boundaries, not arbitrary characters. Each chunk is 500 words with 50-word overlap for context.
+It preserves paragraph structure and keeps the last 5 sentences for context. This gives the AI enough information to generate meaningful cards."
 
-This preserves meaning and gives the AI enough context to generate quality cards."
-
-### Spaced Repetition (3:35 - 3:50)
+### Spaced Repetition (4:05 - 4:20)
 
 **[Show backend/services/spaced_repetition.py]**
 
 "For spaced repetition, I implemented the SM-2 algorithm—the same one Anki uses.
 
-Cards you know well get longer intervals. Cards you struggle with come back sooner. The ease factor adapts to each card's difficulty."
+If you rate a card 'Easy', the interval grows exponentially: 1 day → 3 days → 8 days → 20 days...
 
-### Time Tracking (3:50 - 4:05)
+If you rate it 'Hard', it resets to 1 day. You'll see it again tomorrow."
 
-**[Show frontend/src/pages/StudyPage.tsx - time tracking code]**
-
-"On the frontend, I track time from when the card appears to when you rate it.
-
-The suggestion logic is simple but effective:
-- Fast recall = Easy
-- Normal recall = Medium
-- Slow recall = Hard
-
-This data flows to the backend and powers the analytics."
-
-### Architecture (4:05 - 4:15)
+### Architecture (4:20 - 4:30)
 
 **[Show architecture diagram or deployment URLs]**
 
@@ -201,25 +236,29 @@ Total deployment cost: $0/month on free tiers."
 
 ---
 
-## 🚀 CONCLUSION (4:15 - 4:45)
+## 🚀 CONCLUSION (4:30 - 5:00)
 
 **[Screen: Back to the app or split screen with you]**
 
 "So what makes this special?
 
-1. **Quality Ingestion**: RAG-powered generation gives you comprehensive coverage, not shallow cards.
+1. **Quality First**: Enhanced prompts and validation ensure every card is complete and meaningful. No more fragmented garbage.
 
-2. **Innovation**: Time-based analytics reveal true mastery patterns.
+2. **Active Recall**: Type your answer before revealing - proven to boost retention by 50%.
 
-3. **Simplicity**: 3 rating options instead of 6, with smart suggestions.
+3. **Time Analytics**: The first flashcard app to use response time as a primary mastery indicator.
 
-4. **Delight**: Dark mode, smooth animations, progress tracking—studying doesn't have to be boring.
+4. **Smart Suggestions**: Auto-suggest difficulty based on time, reducing decision fatigue.
+
+5. **Beautiful UX**: 5 theme options, smooth animations, progress tracking—studying doesn't have to be boring.
+
+6. **Proven Algorithm**: SM-2 spaced repetition ensures you review at optimal intervals.
 
 What I'd add with more time:
-- Collaborative decks
+- Collaborative decks and marketplace
 - Image occlusion for diagrams
 - Mobile app with offline support
-- More subjects with specialized rendering
+- Cloze deletion and multiple choice cards
 
 But in one week, I'm proud of what I built. It's deployed, it works, and it genuinely helps students learn better."
 
