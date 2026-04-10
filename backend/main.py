@@ -12,16 +12,13 @@ from config import ALLOWED_ORIGINS, UPLOAD_DIR
 
 app = FastAPI(title="Flashcard Engine API", version="1.0.0")
 
-# Ensure upload directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Serve uploaded PDFs
 try:
     app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 except Exception as e:
     print(f"Warning: Could not mount uploads directory: {e}")
 
-# CORS - Allow frontend origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -30,7 +27,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
 app.include_router(auth_router)
 app.include_router(decks_router)
 app.include_router(cards_router)
@@ -55,7 +51,6 @@ def health():
 
 @app.get("/debug/config")
 def debug_config():
-    """Check if API keys and config are loaded correctly."""
     from config import GROQ_API_KEY, DATABASE_URL
     return {
         "groq_configured": bool(GROQ_API_KEY),
@@ -65,15 +60,8 @@ def debug_config():
     }
 
 
-@app.delete("/admin/reset-db")
-def reset_db():
-    """Drop and recreate all tables - clears all data."""
-    from database.connection import Base, engine
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    return {"status": "ok", "message": "Database cleared and recreated"}
+@app.get("/debug/test-groq")
 def test_groq():
-    """Test Groq API connection directly."""
     from config import GROQ_API_KEY
     if not GROQ_API_KEY:
         return {"status": "error", "message": "GROQ_API_KEY not set"}
@@ -88,3 +76,12 @@ def test_groq():
         return {"status": "ok", "response": response.choices[0].message.content}
     except Exception as e:
         return {"status": "error", "message": str(e), "type": type(e).__name__}
+
+
+@app.delete("/admin/reset-db")
+def reset_db():
+    """Clears all data - drop and recreate tables."""
+    from database.connection import Base, engine
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    return {"status": "ok", "message": "Database cleared!"}
