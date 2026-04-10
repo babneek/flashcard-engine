@@ -27,13 +27,12 @@ def index_pdf_with_pageindex(file_path: str) -> str:
     """
     Uses PageIndex to index the PDF (if available).
     Falls back to simple extraction if PageIndex is not installed.
+    Saves the structure to a JSON file and returns the path.
     """
     if not PAGEINDEX_AVAILABLE:
         print("⚠ PageIndex not available, skipping indexing")
         return None
-    Uses the CLONED PageIndex repository to index the PDF locally.
-    Saves the structure to a JSON file and returns the path.
-    """
+    
     # Ensure environment variables are set for litellm (used by PageIndex)
     if GROQ_API_KEY and not os.getenv("GROQ_API_KEY"):
         os.environ["GROQ_API_KEY"] = GROQ_API_KEY
