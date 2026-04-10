@@ -11,7 +11,7 @@ from routes.auth import get_user_from_token
 from services.pdf_processor import save_uploaded_pdf, extract_text_from_pdf
 from services.rag_engine import generate_cards_with_rag
 from services.card_generator import generate_cards_from_text
-from services.job_manager import job_manager, JobStatus
+
 from config import MAX_PDF_SIZE_MB, GROQ_API_KEY
 import json
 
@@ -102,8 +102,7 @@ async def upload_pdf(
     db: Session = Depends(get_db),
 ):
     """
-    Upload PDF and start async flashcard generation.
-    Returns immediately with a job_id for status polling.
+    Upload PDF and generate flashcards synchronously.
     
     Args:
         deck_id: Deck ID
@@ -111,7 +110,7 @@ async def upload_pdf(
         subject: Subject type - history, mathematics, science, or general
     
     Returns:
-        job_id: Use GET /jobs/{job_id} to check status
+        deck_id, cards_generated, sample_cards
     """
     deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == user.id).first()
     if not deck:
@@ -124,122 +123,67 @@ async def upload_pdf(
     if len(content) > MAX_PDF_SIZE_MB * 1024 * 1024:
         raise HTTPException(status_code=400, detail=f"File too large (max {MAX_PDF_SIZE_MB}MB)")
 
-    # Save PDF immediately
+    # Save PDF
     file_path = save_uploaded_pdf(content, file.filename)
     
-    # Create background job
-    job_id = job_manager.create_job(
-        "pdf_processing",
-        metadata={
-            "deck_id": deck_id,
-            "user_id": user.id,
-            "filename": file.filename,
-            "subject": subject,
-        }
-    )
+    # Extract text
+    text = extract_text_from_pdf(file_path, organize_by_topics=False)
+    print(f"\n{'='*60}")
+    print(f"📚 Processing PDF with RAG Engine")
+    print(f"{'='*60}")
+    print(f"Subject: {subject.upper()}")
+    print(f"Total words: {len(text.split())}")
     
-    # Start async processing
-    job_manager.run_job_async(
-        job_id,
-        _process_pdf_job,
-        file_path=file_path,
-        deck_id=deck_id,
-        user_id=user.id,
-        subject=subject,
-    )
-    
-    return {
-        "job_id": job_id,
-        "status": "processing",
-        "message": "PDF upload accepted. Use GET /jobs/{job_id} to check progress.",
-    }
-
-
-def _process_pdf_job(job_id: str, file_path: str, deck_id: str, user_id: str, subject: str):
-    """
-    Background task for PDF processing.
-    Updates job progress as it goes.
-    """
-    # Create new DB session for background thread
-    db = SessionLocal()
-    
+    # Test Groq
     try:
-        # Update progress: extracting text
-        job_manager.update_job(job_id, progress=10)
-        
-        text = extract_text_from_pdf(file_path, organize_by_topics=False)
-        print(f"\n{'='*60}")
-        print(f"📚 Processing PDF with RAG Engine (Job: {job_id})")
-        print(f"{'='*60}")
-        print(f"Subject: {subject.upper()}")
-        print(f"Total words: {len(text.split())}")
-        
-        # Update progress: starting card generation
-        job_manager.update_job(job_id, progress=20)
-        
-        # Test Groq
-        try:
-            from groq import Groq
-            test_client = Groq(api_key=GROQ_API_KEY)
-            test_resp = test_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": "Reply with just: OK"}],
-                max_tokens=5,
-            )
-            print(f"✅ Groq test call succeeded: {test_resp.choices[0].message.content}")
-        except Exception as groq_test_err:
-            raise Exception(f"Groq API error: {str(groq_test_err)}")
-        
-        # Generate cards with progress updates
-        job_manager.update_job(job_id, progress=30)
-        all_cards = generate_cards_with_rag(text, subject=subject, cards_per_chunk=8)
-        
-        job_manager.update_job(job_id, progress=80)
-        
-        print(f"\n{'='*60}")
-        print(f"✅ RAG Processing Complete (Job: {job_id})")
-        print(f"{'='*60}")
-        print(f"Total cards generated: {len(all_cards)}")
-        
-        # Save cards to database
-        db_cards = []
-        for card_data in all_cards:
-            card = CardModel(
-                deck_id=deck_id,
-                front_text=card_data["front"],
-                back_text=card_data["back"],
-                card_type=card_data.get("type", "concept"),
-            )
-            db.add(card)
-            db_cards.append(card)
-        
-        # Update deck
-        deck = db.query(Deck).filter(Deck.id == deck_id).first()
-        if deck:
-            deck.card_count = (deck.card_count or 0) + len(db_cards)
-            deck.source_pdf_url = f"/uploads/{os.path.basename(file_path)}"
-        
-        db.commit()
-        
-        # Return result
-        result = {
-            "deck_id": deck_id,
-            "cards_generated": len(db_cards),
-            "subject": subject,
-            "rag_enabled": True,
-            "sample_cards": [
-                {"front": c.front_text, "back": c.back_text, "type": c.card_type}
-                for c in db_cards[:5]
-            ],
-        }
-        
-        return result
-        
-    except Exception as e:
-        print(f"❌ Error in PDF processing job {job_id}: {e}")
-        raise
-    finally:
-        db.close()
+        from groq import Groq
+        test_client = Groq(api_key=GROQ_API_KEY)
+        test_resp = test_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": "Reply with just: OK"}],
+            max_tokens=5,
+        )
+        print(f"✅ Groq test call succeeded: {test_resp.choices[0].message.content}")
+    except Exception as groq_test_err:
+        raise HTTPException(status_code=500, detail=f"Groq API error: {str(groq_test_err)}")
+    
+    # Generate cards
+    all_cards = generate_cards_with_rag(text, subject=subject, cards_per_chunk=8)
+    
+    print(f"\n{'='*60}")
+    print(f"✅ RAG Processing Complete")
+    print(f"{'='*60}")
+    print(f"Total cards generated: {len(all_cards)}")
+    
+    # Save cards to database
+    db_cards = []
+    for card_data in all_cards:
+        card = CardModel(
+            deck_id=deck_id,
+            front_text=card_data["front"],
+            back_text=card_data["back"],
+            card_type=card_data.get("type", "concept"),
+        )
+        db.add(card)
+        db_cards.append(card)
+    
+    # Update deck
+    deck.card_count = (deck.card_count or 0) + len(db_cards)
+    deck.source_pdf_url = f"/uploads/{os.path.basename(file_path)}"
+    
+    db.commit()
+    
+    # Return result
+    return {
+        "deck_id": deck_id,
+        "cards_generated": len(db_cards),
+        "subject": subject,
+        "rag_enabled": True,
+        "sample_cards": [
+            {"front": c.front_text, "back": c.back_text, "type": c.card_type}
+            for c in db_cards[:5]
+        ],
+    }
 
 
 @router.post("/{deck_id}/generate")
