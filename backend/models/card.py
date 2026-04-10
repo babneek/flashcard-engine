@@ -18,7 +18,7 @@ class Card(Base):
     ease_factor = Column(Float, default=2.5)
     interval = Column(Integer, default=1)
     repetitions = Column(Integer, default=0)
-    next_review_date = Column(Date, default=date.today)
+    next_review_date = Column(Date, default=lambda: date.today())
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
