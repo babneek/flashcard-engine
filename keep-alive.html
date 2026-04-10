@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard Engine - Keep Alive</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+    }
+    
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    .status.active {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+    
+    .status.waiting {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeaa7;
+    }
+    
+    .pulse {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .status.active .pulse {
+      background: #28a745;
+    }
+    
+    .status.error .pulse {
+      background: #dc3545;
+    }
+    
+    .status.waiting .pulse {
+      background: #ffc107;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .log {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    .log-entry {
+      padding: 5px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+    
+    .log-time {
+      color: #666;
+      margin-right: 10px;
+    }
+    
+    .log-success {
+      color: #28a745;
+    }
+    
+    .log-error {
+      color: #dc3545;
+    }
+    
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e7f3ff;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #004085;
+      line-height: 1.6;
+    }
+    
+    .info strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔥 Flashcard Engine</h1>
+    <p class="subtitle">Backend Keep-Alive Service</p>
+    
+    <div class="status waiting" id="status">
+      <div class="pulse"></div>
+      <span id="status-text">Initializing...</span>
+    </div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Total Pings</div>
+        <div class="stat-value" id="total-pings">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Success Rate</div>
+        <div class="stat-value" id="success-rate">100%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Last Response</div>
+        <div class="stat-value" id="last-response">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Next Ping In</div>
+        <div class="stat-value" id="next-ping">10:00</div>
+      </div>
+    </div>
+    
+    <div class="log" id="log">
+      <div class="log-entry">
+        <span class="log-time">--:--:--</span>
+        <span>Waiting for first ping...</span>
+      </div>
+    </div>
+    
+    <div class="info">
+      <strong>💡 How it works:</strong>
+      Keep this tab open to prevent your Render backend from spinning down. 
+      The service pings your backend every 10 minutes to keep it active.
+      <br><br>
+      <strong>Backend URL:</strong> https://flashcard-engine-api-gfzf.onrender.com
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = 'https://flashcard-engine-api-gfzf.onrender.com';
+    const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    
+    let totalPings = 0;
+    let successfulPings = 0;
+    let nextPingTime = Date.now() + PING_INTERVAL;
+    
+    const statusEl = document.getElementById('status');
+    const statusTextEl = document.getElementById('status-text');
+    const totalPingsEl = document.getElementById('total-pings');
+    const successRateEl = document.getElementById('success-rate');
+    const lastResponseEl = document.getElementById('last-response');
+    const nextPingEl = document.getElementById('next-ping');
+    const logEl = document.getElementById('log');
+    
+    function updateStatus(type, message) {
+      statusEl.className = `status ${type}`;
+      statusTextEl.textContent = message;
+    }
+    
+    function addLog(message, isSuccess = true) {
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
+        <span class="log-time">${time}</span>
+        <span class="${isSuccess ? 'log-success' : 'log-error'}">${message}</span>
+      `;
+      logEl.insertBefore(entry, logEl.firstChild);
+      
+      // Keep only last 10 entries
+      while (logEl.children.length > 10) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+    
+    async function pingBackend() {
+      totalPings++;
+      totalPingsEl.textContent = totalPings;
+      
+      try {
+        updateStatus('waiting', 'Pinging backend...');
+        const startTime = Date.now();
+        
+        const response = await fetch(`${BACKEND_URL}/health`);
+        const duration = Date.now() - startTime;
+        
+        if (response.ok) {
+          successfulPings++;
+          lastResponseEl.textContent = `${duration}ms`;
+          updateStatus('active', `Backend is alive (${duration}ms)`);
+          addLog(`✓ Ping successful (${duration}ms)`, true);
+        } else {
+          lastResponseEl.textContent = 'Error';
+          updateStatus('error', `Backend returned status ${response.status}`);
+          addLog(`✗ Backend returned status ${response.status}`, false);
+        }
+      } catch (error) {
+        lastResponseEl.textContent = 'Failed';
+        updateStatus('error', `Failed to reach backend: ${error.message}`);
+        addLog(`✗ Failed: ${error.message}`, false);
+      }
+      
+      // Update success rate
+      const rate = Math.round((successfulPings / totalPings) * 100);
+      successRateEl.textContent = `${rate}%`;
+      
+      // Reset next ping timer
+      nextPingTime = Date.now() + PING_INTERVAL;
+    }
+    
+    function updateCountdown() {
+      const remaining = Math.max(0, nextPingTime - Date.now());
+      const minutes = Math.floor(remaining / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      nextPingEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Initial ping
+    addLog('Keep-Alive service started', true);
+    pingBackend();
+    
+    // Set up interval
+    setInterval(pingBackend, PING_INTERVAL);
+    
+    // Update countdown every second
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>

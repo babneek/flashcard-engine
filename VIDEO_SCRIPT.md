@@ -55,16 +55,17 @@ Let me show you what I built."
 
 ### Card Generation Results (1:15 - 1:45)
 
-**[Show success message: "Generated 237 cards"]**
+**[Show success message with card count]**
 
-"237 cards generated from this PDF! 
+"Success! Cards generated from this PDF!
 
 Here's the key: I didn't just split text randomly. I built a RAG engine that:
-- Chunks text at sentence boundaries
-- Maintains context with overlapping chunks
+- Chunks text semantically at sentence boundaries (600 words per chunk)
+- Maintains context with 100-word overlapping windows
 - Generates comprehensive cards covering concepts, definitions, relationships, and examples
+- Uses enhanced prompts with quality validation
 
-This is a 20x improvement over naive approaches that would give you maybe 10-12 shallow cards."
+The system processes PDFs synchronously and generates high-quality flashcards in one go. No polling, no waiting—just instant results."
 
 **[Show deck detail page with card count]**
 
@@ -210,7 +211,9 @@ This is why we get 150-250 high-quality cards instead of 12-40 garbage cards."
 
 "The RAG engine does semantic chunking - 600-word chunks with 100-word overlap.
 
-It preserves paragraph structure and keeps the last 5 sentences for context. This gives the AI enough information to generate meaningful cards."
+It preserves paragraph structure and keeps the last 5 sentences for context. This gives the AI enough information to generate meaningful cards.
+
+The system processes everything synchronously, which is actually more memory-efficient than async job queues. It works perfectly on Render's free tier with 512MB RAM."
 
 ### Spaced Repetition (4:05 - 4:20)
 
@@ -227,12 +230,12 @@ If you rate it 'Hard', it resets to 1 day. You'll see it again tomorrow."
 **[Show architecture diagram or deployment URLs]**
 
 "The stack:
-- Backend: FastAPI on Render
-- Frontend: React + TypeScript on Vercel
-- AI: Groq (llama-3.3-70b-versatile)
-- Database: SQLite (easy to migrate to PostgreSQL)
+- Backend: FastAPI deployed on Render (https://flashcard-engine-api-gfzf.onrender.com)
+- Frontend: React + TypeScript on Vercel (https://flashcard-engine-lac.vercel.app)
+- AI: Groq API with llama-3.3-70b-versatile model
+- Database: PostgreSQL on Render
 
-Total deployment cost: $0/month on free tiers."
+Everything is fully deployed and working in production. Total deployment cost: $0/month on free tiers."
 
 ---
 
@@ -265,8 +268,11 @@ But in one week, I'm proud of what I built. It's deployed, it works, and it genu
 **[Show the URLs on screen]**
 
 "Try it yourself:
-- Frontend: flashcard-engine-lac.vercel.app
-- GitHub: github.com/babneek/flashcard-engine
+- Live App: https://flashcard-engine-lac.vercel.app
+- Backend API: https://flashcard-engine-api-gfzf.onrender.com
+- GitHub: https://github.com/babneek/flashcard-engine
+
+The app is fully deployed and working. You can create an account right now and start generating flashcards from your PDFs.
 
 Thanks for watching!"
 
