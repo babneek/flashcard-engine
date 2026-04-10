@@ -46,134 +46,147 @@ def generate_cards_with_pageindex(json_path: str, subject: str = "general") -> l
 SUBJECT_PROMPTS = {
     "history": """You are an expert history educator creating flashcards for CBSE Class 10 students.
 
-CARD TYPES (in order of difficulty - BEGINNER to ADVANCED):
-1. Definition (BEGINNER): Basic terms and concepts (e.g., "What was the French Revolution?")
-2. Timeline (BEGINNER): Important dates and events (e.g., "When did the Greek war of independence begin?")
-3. People (INTERMEDIATE): Key figures and their contributions (e.g., "Who was Giuseppe Mazzini?")
-4. Cause-Effect (INTERMEDIATE): Why events happened (e.g., "What caused the rise of nationalism?")
-5. Analysis (ADVANCED): Understanding significance and impact (e.g., "Why was the Frankfurt Parliament significant?")
+CRITICAL RULES:
+1. Each card must be COMPLETE and SELF-CONTAINED
+2. Questions must be CLEAR and SPECIFIC
+3. Answers must be CONCISE (2-4 sentences max)
+4. NO incomplete sentences or fragments
+5. NO "Define: [incomplete text]" - write proper questions
+6. Focus on KEY CONCEPTS, not random sentences
 
-REQUIREMENTS:
-- Front: Clear, specific question
-- Back: Concise answer (2-4 sentences max)
-- Use simple language for Class 10 level
-- Focus on CBSE exam-relevant content
-- Include dates, names, and key facts
-- Generate cards in PROGRESSIVE ORDER: Start with definitions, then timeline, then people, then cause-effect, then analysis
-- Generate 10-12 cards per text chunk with this progression
+CARD TYPES (in order of difficulty):
+1. Definition (BEGINNER): "What was the French Revolution?" → "The French Revolution (1789-1799) was a period of radical social and political upheaval in France..."
+2. Timeline (BEGINNER): "When did the Greek war of independence begin?" → "The Greek war of independence began in 1821..."
+3. People (INTERMEDIATE): "Who was Giuseppe Mazzini?" → "Giuseppe Mazzini was an Italian revolutionary who founded Young Italy..."
+4. Cause-Effect (INTERMEDIATE): "What caused the rise of nationalism in Europe?" → "Nationalism rose due to..."
+5. Analysis (ADVANCED): "Why was the Frankfurt Parliament significant?" → "The Frankfurt Parliament was significant because..."
 
 TEXT TO CONVERT:
 {text_excerpt}
 
-OUTPUT: Return ONLY valid JSON array IN ORDER (beginner to advanced):
+QUALITY CHECKLIST:
+✓ Is the question complete and clear?
+✓ Is the answer informative and concise?
+✓ Does it focus on important concepts?
+✓ Would a student understand this without context?
+
+OUTPUT: Return ONLY valid JSON array with 10-12 HIGH-QUALITY cards:
 [
   {{
-    "front": "Clear question here?",
-    "back": "Concise answer here.",
+    "front": "Clear, complete question?",
+    "back": "Concise, informative answer (2-4 sentences).",
     "type": "definition | timeline | people | cause-effect | analysis",
     "difficulty": "beginner | intermediate | advanced"
   }}
-]
+]""",
 
-Generate 10-12 cards in PROGRESSIVE difficulty order.""",
+    "mathematics": """You are an expert mathematics educator creating flashcards for students.
 
-    "mathematics": """You are an expert mathematics educator creating flashcards.
+CRITICAL RULES:
+1. Questions must be CLEAR and COMPLETE
+2. Include WORKED EXAMPLES with steps
+3. Use proper mathematical notation
+4. NO incomplete formulas or fragments
+5. Each card must be SELF-CONTAINED
+6. Focus on UNDERSTANDING, not just memorization
 
-CARD TYPES (in order of difficulty - BEGINNER to ADVANCED):
-1. Definition (BEGINNER): Basic terms (e.g., "What is a quadratic equation?")
-2. Formula (BEGINNER): Key equations (e.g., "What is the quadratic formula?")
-3. Concept (INTERMEDIATE): Understanding principles (e.g., "Why must a ≠ 0?")
-4. Example (INTERMEDIATE): Solved problems (e.g., "Solve: x² - 5x + 6 = 0")
-5. Practice (ADVANCED): Complex problems (e.g., "Find roots of x² - 9 = 0 and explain")
-
-REQUIREMENTS:
-- Front: One clear question
-- Back: Step-by-step solution or clear explanation
-- Use proper mathematical notation
-- Include worked examples
-- Progress from basic definitions to complex problems
-- Generate 10-15 cards in PROGRESSIVE ORDER
+CARD TYPES (in order of difficulty):
+1. Definition (BEGINNER): "What is a prime number?" → "A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. Examples: 2, 3, 5, 7, 11."
+2. Formula (BEGINNER): "What is the formula for HCF and LCM relationship?" → "For any two positive integers a and b: HCF(a,b) × LCM(a,b) = a × b"
+3. Concept (INTERMEDIATE): "Why is √2 irrational?" → "Assume √2 = a/b in lowest terms. Then 2b² = a², so a is even. Let a = 2c. Then b² = 2c², so b is even. This contradicts lowest terms. Therefore √2 is irrational."
+4. Example (INTERMEDIATE): "Find HCF(96, 404) using prime factorization" → "96 = 2⁵ × 3, 404 = 2² × 101. HCF = 2² = 4 (smallest power of common factors)"
+5. Practice (ADVANCED): "Prove that 3 + √5 is irrational" → "Assume 3 + √5 = a/b. Then √5 = (a-3b)/b. Since a,b are integers, √5 would be rational, which contradicts the fact that √5 is irrational."
 
 TEXT TO CONVERT:
 {text_excerpt}
 
-OUTPUT: Return ONLY valid JSON array IN ORDER (beginner to advanced):
+QUALITY CHECKLIST:
+✓ Is the mathematical concept explained clearly?
+✓ Are formulas and notation correct?
+✓ Do examples show complete solutions?
+✓ Would a student understand the steps?
+
+OUTPUT: Return ONLY valid JSON array with 12-15 HIGH-QUALITY cards:
 [
   {{
-    "front": "Question?",
-    "back": "Answer with steps if needed.",
+    "front": "Clear mathematical question?",
+    "back": "Complete answer with steps/explanation.",
     "type": "definition | formula | concept | example | practice",
     "difficulty": "beginner | intermediate | advanced"
   }}
-]
+]""",
 
-Generate 10-15 cards in PROGRESSIVE difficulty order.""",
+    "science": """You are an expert science educator creating flashcards for students.
 
-    "science": """You are an expert science educator creating flashcards.
+CRITICAL RULES:
+1. Questions must be CLEAR and SPECIFIC
+2. Answers must be SCIENTIFICALLY ACCURATE
+3. Include units and measurements
+4. NO incomplete sentences or fragments
+5. Each card must be SELF-CONTAINED
+6. Focus on UNDERSTANDING concepts
 
-CARD TYPES (in order of difficulty - BEGINNER to ADVANCED):
-1. Definition (BEGINNER): Basic scientific terms (e.g., "What is photosynthesis?")
-2. Fact (BEGINNER): Important information (e.g., "What is the speed of light?")
-3. Process (INTERMEDIATE): How things work (e.g., "Explain the water cycle")
-4. Concept (INTERMEDIATE): Understanding principles (e.g., "Why do objects fall?")
-5. Experiment (ADVANCED): Practical applications (e.g., "How to test for starch?")
-
-REQUIREMENTS:
-- Front: Clear, specific question
-- Back: Accurate scientific answer (2-4 sentences)
-- Use diagrams descriptions when helpful
-- Include units and measurements
-- Focus on understanding, not memorization
-- Progress from basic facts to complex concepts
-- Generate 10-12 cards in PROGRESSIVE ORDER
+CARD TYPES (in order of difficulty):
+1. Definition (BEGINNER): "What is photosynthesis?" → "Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to produce oxygen and glucose. Equation: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂"
+2. Fact (BEGINNER): "What is the speed of light?" → "The speed of light in vacuum is approximately 3 × 10⁸ m/s (300,000 km/s)."
+3. Process (INTERMEDIATE): "Explain the water cycle" → "The water cycle involves: 1) Evaporation (water → vapor), 2) Condensation (vapor → clouds), 3) Precipitation (rain/snow), 4) Collection (rivers/oceans)."
+4. Concept (INTERMEDIATE): "Why do objects fall?" → "Objects fall due to gravity, a force of attraction between masses. On Earth, gravity accelerates objects at 9.8 m/s²."
+5. Experiment (ADVANCED): "How to test for starch?" → "Add iodine solution to the sample. If starch is present, the solution turns blue-black. This is because iodine forms a complex with starch molecules."
 
 TEXT TO CONVERT:
 {text_excerpt}
 
-OUTPUT: Return ONLY valid JSON array IN ORDER (beginner to advanced):
+QUALITY CHECKLIST:
+✓ Is the science accurate and clear?
+✓ Are units and measurements included?
+✓ Does it explain the concept well?
+✓ Would a student understand without prior context?
+
+OUTPUT: Return ONLY valid JSON array with 10-12 HIGH-QUALITY cards:
 [
   {{
-    "front": "Question?",
-    "back": "Scientific answer.",
+    "front": "Clear scientific question?",
+    "back": "Accurate, complete answer with details.",
     "type": "definition | fact | process | concept | experiment",
     "difficulty": "beginner | intermediate | advanced"
   }}
-]
+]""",
 
-Generate 10-12 cards in PROGRESSIVE difficulty order.""",
+    "general": """You are an expert educator creating high-quality flashcards.
 
-    "general": """You are an expert educator creating flashcards.
+CRITICAL RULES:
+1. Each card must be COMPLETE and SELF-CONTAINED
+2. Questions must be CLEAR and SPECIFIC
+3. Answers must be CONCISE but INFORMATIVE (2-4 sentences)
+4. NO incomplete sentences or fragments
+5. NO "Define: [random text]" - write proper questions
+6. Focus on KEY CONCEPTS from the text
 
-CARD TYPES (in order of difficulty - BEGINNER to ADVANCED):
-1. Definition (BEGINNER): Key terms and concepts
-2. Fact (BEGINNER): Important information
-3. Concept (INTERMEDIATE): Understanding and reasoning
-4. Example (INTERMEDIATE): Practical applications
-5. Analysis (ADVANCED): Critical thinking
-
-REQUIREMENTS:
-- Front: One clear question
-- Back: Concise, accurate answer (2-4 sentences)
-- Self-contained cards
-- Age-appropriate language
-- Focus on understanding
-- Progress from basic to advanced
-- Generate 10-12 cards in PROGRESSIVE ORDER
+CARD TYPES (in order of difficulty):
+1. Definition (BEGINNER): "What is [key term]?" → "Clear, concise definition with example."
+2. Fact (BEGINNER): "When/Where/Who [specific fact]?" → "Specific factual answer."
+3. Concept (INTERMEDIATE): "Explain [concept]" → "Clear explanation of how/why something works."
+4. Example (INTERMEDIATE): "Give an example of [concept]" → "Concrete example with explanation."
+5. Analysis (ADVANCED): "Why is [concept] important?" → "Analysis of significance and implications."
 
 TEXT TO CONVERT:
 {text_excerpt}
 
-OUTPUT: Return ONLY valid JSON array IN ORDER (beginner to advanced):
+QUALITY CHECKLIST:
+✓ Is the question complete and clear?
+✓ Is the answer informative and concise?
+✓ Does it focus on important concepts?
+✓ Would someone understand this without reading the source?
+
+OUTPUT: Return ONLY valid JSON array with 10-12 HIGH-QUALITY cards:
 [
   {{
-    "front": "Question?",
-    "back": "Answer.",
+    "front": "Clear, complete question?",
+    "back": "Concise, informative answer (2-4 sentences).",
     "type": "definition | fact | concept | example | analysis",
     "difficulty": "beginner | intermediate | advanced"
   }}
-]
-
-Generate 10-12 cards in PROGRESSIVE difficulty order."""
+]"""
 }
 
 def get_prompt_for_subject(subject: str) -> str:
@@ -311,70 +324,117 @@ def _generate_with_groq(text: str, topic_context: str = None, subject: str = "ge
 
 def _generate_rule_based(text: str, topic_context: str = None, subject: str = "general") -> list[dict]:
     """
-    Smart rule-based card generation when no API key is available.
-    Extracts key sentences and creates Q&A pairs.
+    Improved rule-based card generation when no API key is available.
+    Extracts key concepts and creates meaningful Q&A pairs.
     
     Args:
         text: Text content
         topic_context: Optional topic name for better card generation
+        subject: Subject type for appropriate card generation
     """
-    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if len(s.strip()) > 20]
-    cards = []
-
+    # Split into sentences
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if len(s.strip()) > 30]
+    
     if not sentences:
-        cards.append({
-            "front": f"Summarize the key concepts{f' about {topic_context}' if topic_context else ''}.",
-            "back": text[:300].strip() + "..." if len(text) > 300 else text.strip(),
-            "type": "concept"
-        })
-        return cards
-
-    card_templates = [
-        ("definition", "beginner", "Define: {topic}", "{detail}"),
-        ("formula", "beginner", "What is the formula for {topic}?", "{detail}"),
-        ("concept", "intermediate", "Explain the concept of {topic}.", "{detail}"),
-        ("example", "intermediate", "Give an example/solved problem for: {topic}", "{detail}"),
-        ("practice", "advanced", "Solve this challenge related to {topic}", "Answer: {detail}"),
-    ]
-
-    for i, sentence in enumerate(sentences[:12]):
-        words = sentence.split()
-        if len(words) < 4:
-            continue
-
-        # Use topic context if available, otherwise extract from sentence
-        if topic_context:
-            topic = topic_context
+        return []
+    
+    cards = []
+    
+    # Extract key terms (capitalized words, numbers, formulas)
+    key_terms = set()
+    for sentence in sentences:
+        # Find capitalized terms (likely important concepts)
+        caps = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', sentence)
+        key_terms.update(caps)
+        
+        # Find numbers with context (dates, measurements)
+        numbers = re.findall(r'\b\d+(?:\.\d+)?\s*(?:years?|days?|meters?|km|kg|%|°C)?\b', sentence)
+        key_terms.update(numbers)
+    
+    # Generate definition cards for key terms
+    for term in list(key_terms)[:5]:
+        # Find sentence containing this term
+        for sentence in sentences:
+            if term in sentence:
+                cards.append({
+                    "front": f"What is {term}?",
+                    "back": sentence,
+                    "type": "definition",
+                    "difficulty": "beginner"
+                })
+                break
+    
+    # Generate concept cards from important sentences
+    important_sentences = [s for s in sentences if len(s.split()) > 15 and len(s.split()) < 50]
+    
+    for i, sentence in enumerate(important_sentences[:8]):
+        # Create different question types based on sentence structure
+        if "because" in sentence.lower() or "due to" in sentence.lower():
+            # Cause-effect card
+            parts = re.split(r'\bbecause\b|\bdue to\b', sentence, flags=re.IGNORECASE)
+            if len(parts) == 2:
+                cards.append({
+                    "front": f"Why {parts[0].strip().lower()}?",
+                    "back": f"Because {parts[1].strip()}",
+                    "type": "cause-effect" if subject == "history" else "concept",
+                    "difficulty": "intermediate"
+                })
+        elif any(word in sentence.lower() for word in ["formula", "equation", "="]):
+            # Formula card
+            cards.append({
+                "front": f"What is the formula mentioned in: {sentence[:50]}...?",
+                "back": sentence,
+                "type": "formula",
+                "difficulty": "beginner"
+            })
+        elif re.search(r'\b(is|are|was|were)\b', sentence):
+            # Definition/fact card
+            match = re.search(r'(.+?)\s+(is|are|was|were)\s+(.+)', sentence)
+            if match:
+                subject_part = match.group(1).strip()
+                predicate = match.group(3).strip()
+                cards.append({
+                    "front": f"What {match.group(2)} {subject_part}?",
+                    "back": predicate,
+                    "type": "fact" if subject == "science" else "definition",
+                    "difficulty": "beginner"
+                })
         else:
-            topic = " ".join(words[:min(6, len(words))])
-            
-        template_idx = i % len(card_templates)
-        card_type, difficulty, front_tmpl, back_tmpl = card_templates[template_idx]
-
-        # Format both front and back with available data
-        front = front_tmpl.format(topic=topic)
-        back = back_tmpl.format(detail=sentence)
-
+            # General concept card
+            # Extract first few words as topic
+            words = sentence.split()
+            topic_words = " ".join(words[:5])
+            cards.append({
+                "front": f"Explain: {topic_words}...",
+                "back": sentence,
+                "type": "concept",
+                "difficulty": "intermediate"
+            })
+    
+    # Add a summary card
+    if len(sentences) >= 3:
+        summary = ". ".join(sentences[:3])
         cards.append({
-            "front": front,
-            "back": back,
-            "type": card_type,
-            "difficulty": difficulty
+            "front": f"Summarize the main points{f' about {topic_context}' if topic_context else ''}.",
+            "back": summary,
+            "type": "analysis",
+            "difficulty": "advanced"
         })
-
-    summary_text = ". ".join(sentences[:3])
-    cards.append({
-        "front": f"What are the main topics covered{f' in {topic_context}' if topic_context else ''}?",
-        "back": summary_text[:400],
-        "type": "concept",
-        "difficulty": "intermediate"
-    })
-
-    return cards[:12]
+    
+    # Remove duplicates and limit
+    seen = set()
+    unique_cards = []
+    for card in cards:
+        key = (card["front"], card["back"])
+        if key not in seen:
+            seen.add(key)
+            unique_cards.append(card)
+    
+    return unique_cards[:12]
 
 
 def _parse_cards_json(content: str) -> list[dict]:
-    """Parse and validate JSON card output from LLM."""
+    """Parse and validate JSON card output from LLM with strict quality control."""
     content = re.sub(r"^```(?:json)?\s*", "", content, flags=re.MULTILINE)
     content = re.sub(r"\s*```$", "", content, flags=re.MULTILINE)
     content = content.strip()
@@ -389,21 +449,48 @@ def _parse_cards_json(content: str) -> list[dict]:
             raise ValueError("Could not parse card JSON from LLM response")
 
     valid_cards = []
+    rejected_count = 0
+    
     for card in cards:
         front = card.get("front", "").strip()
         back = card.get("back", "").strip()
         card_type = card.get("type", "concept")
         difficulty = card.get("difficulty", "intermediate")
 
-        if len(front) < 10 or len(back) < 10:
+        # Quality checks
+        if len(front) < 10 or len(back) < 15:
+            rejected_count += 1
             continue
-        if len(front) > 500 or len(back) > 500:
+            
+        # Reject incomplete or low-quality cards
+        if any(pattern in front.lower() for pattern in [
+            "define:", "what is the formula for we", "explain the concept of we",
+            "give an example/solved problem for:", "solve this challenge related to"
+        ]):
+            # Check if it's actually a proper question
+            if not front.endswith("?") and "what" not in front.lower() and "how" not in front.lower():
+                rejected_count += 1
+                continue
+        
+        # Reject cards with incomplete sentences
+        if front.count(" ") < 3 or back.count(" ") < 5:
+            rejected_count += 1
+            continue
+            
+        # Reject cards that are just fragments
+        if not any(char in front for char in "?!.") and len(front.split()) < 5:
+            rejected_count += 1
+            continue
+        
+        # Truncate if too long
+        if len(front) > 500:
             front = front[:500]
-            back = back[:500]
+        if len(back) > 800:
+            back = back[:800]
 
         # Validate card type
         valid_types = ["definition", "concept", "example", "formula", "practice", "timeline", 
-                      "people", "cause-effect", "analysis", "fact", "process", "experiment", "edge_case", "application"]
+                      "people", "cause-effect", "analysis", "fact", "process", "experiment"]
         if card_type not in valid_types:
             card_type = "concept"
         
@@ -417,5 +504,8 @@ def _parse_cards_json(content: str) -> list[dict]:
             "type": card_type,
             "difficulty": difficulty
         })
+    
+    if rejected_count > 0:
+        print(f"  ⚠ Rejected {rejected_count} low-quality cards")
 
     return valid_cards

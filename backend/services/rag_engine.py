@@ -38,64 +38,88 @@ class SimpleRAGEngine:
                 return None
         return self.model
     
-    def semantic_chunk_text(self, text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]:
+    def semantic_chunk_text(self, text: str, chunk_size: int = 600, overlap: int = 100) -> List[str]:
         """
-        Split text into semantic chunks using sentence boundaries.
-        Falls back to simple splitting if sentence detection fails.
+        Split text into semantic chunks using sentence boundaries and paragraph structure.
+        Preserves context by keeping related sentences together.
         
         Args:
             text: Input text
-            chunk_size: Target words per chunk
-            overlap: Overlapping words between chunks for context
+            chunk_size: Target words per chunk (increased for better context)
+            overlap: Overlapping words between chunks for continuity
         
         Returns:
-            List of text chunks
+            List of text chunks with preserved context
         """
-        # Split into sentences (simple approach)
-        sentences = re.split(r'(?<=[.!?])\s+', text)
+        # First split by paragraphs to preserve structure
+        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
         
         chunks = []
         current_chunk = []
         current_word_count = 0
         
-        for sentence in sentences:
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-                
-            words = sentence.split()
-            word_count = len(words)
+        for para in paragraphs:
+            # Split paragraph into sentences
+            sentences = re.split(r'(?<=[.!?])\s+', para)
             
-            # If adding this sentence exceeds chunk_size, save current chunk
-            if current_word_count + word_count > chunk_size and current_chunk:
-                chunk_text = ' '.join(current_chunk)
-                chunks.append(chunk_text)
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if not sentence:
+                    continue
+                    
+                words = sentence.split()
+                word_count = len(words)
                 
-                # Keep last few sentences for overlap
-                overlap_sentences = []
-                overlap_words = 0
-                for s in reversed(current_chunk[-3:]):  # Last 3 sentences
-                    overlap_words += len(s.split())
-                    if overlap_words < overlap:
-                        overlap_sentences.insert(0, s)
-                    else:
-                        break
-                
-                current_chunk = overlap_sentences + [sentence]
-                current_word_count = sum(len(s.split()) for s in current_chunk)
-            else:
-                current_chunk.append(sentence)
-                current_word_count += word_count
+                # If adding this sentence exceeds chunk_size, save current chunk
+                if current_word_count + word_count > chunk_size and current_chunk:
+                    chunk_text = ' '.join(current_chunk)
+                    chunks.append(chunk_text)
+                    
+                    # Keep last few sentences for overlap (better context)
+                    overlap_sentences = []
+                    overlap_words = 0
+                    for s in reversed(current_chunk[-5:]):  # Last 5 sentences for context
+                        overlap_words += len(s.split())
+                        if overlap_words < overlap:
+                            overlap_sentences.insert(0, s)
+                        else:
+                            break
+                    
+                    current_chunk = overlap_sentences + [sentence]
+                    current_word_count = sum(len(s.split()) for s in current_chunk)
+                else:
+                    current_chunk.append(sentence)
+                    current_word_count += word_count
+            
+            # Add paragraph break marker if chunk continues
+            if current_chunk and current_word_count < chunk_size * 0.8:
+                current_chunk.append("")  # Empty string as paragraph separator
         
         # Add remaining chunk
         if current_chunk:
-            chunks.append(' '.join(current_chunk))
+            chunk_text = ' '.join([s for s in current_chunk if s])  # Remove empty strings
+            if chunk_text.strip():
+                chunks.append(chunk_text)
         
         # If no chunks created (very short text), return as single chunk
         if not chunks:
             chunks = [text]
         
-        return chunks
+        # Post-process: merge very small chunks
+        final_chunks = []
+        i = 0
+        while i < len(chunks):
+            chunk = chunks[i]
+            # If chunk is too small and there's a next chunk, merge them
+            if len(chunk.split()) < chunk_size * 0.3 and i + 1 < len(chunks):
+                merged = chunk + " " + chunks[i + 1]
+                final_chunks.append(merged)
+                i += 2
+            else:
+                final_chunks.append(chunk)
+                i += 1
+        
+        return final_chunks
     
     def create_embeddings(self, chunks: List[str]):
         """
@@ -194,9 +218,9 @@ class SimpleRAGEngine:
         }
 
 
-def generate_cards_with_rag(text: str, subject: str = "general", cards_per_chunk: int = 10) -> List[Dict]:
+def generate_cards_with_rag(text: str, subject: str = "general", cards_per_chunk: int = 12) -> List[Dict]:
     """
-    Generate flashcards using RAG approach.
+    Generate flashcards using RAG approach with improved chunking.
     
     Args:
         text: Full document text
@@ -211,8 +235,8 @@ def generate_cards_with_rag(text: str, subject: str = "general", cards_per_chunk
     # Initialize RAG engine
     rag = SimpleRAGEngine()
     
-    # Index document with semantic chunking
-    index_result = rag.index_document(text, chunk_size=500)
+    # Index document with semantic chunking (larger chunks for better context)
+    index_result = rag.index_document(text, chunk_size=600)
     
     print(f"\n🎯 RAG Indexing Complete:")
     print(f"  • Chunks: {index_result['chunk_count']}")
@@ -228,22 +252,53 @@ def generate_cards_with_rag(text: str, subject: str = "general", cards_per_chunk
     all_cards = []
     chunks = rag.get_all_chunks()
     
-    print(f"\n🎴 Generating cards from {len(chunks)} chunks...")
+    print(f"\n🎴 Generating high-quality cards from {len(chunks)} chunks...")
+    print(f"  Subject: {subject.upper()}")
+    
     for i, chunk in enumerate(chunks, 1):
-        print(f"  Chunk {i}/{len(chunks)}: {len(chunk.split())} words", end="")
+        chunk_words = len(chunk.split())
+        print(f"  Chunk {i}/{len(chunks)}: {chunk_words} words", end="")
         
         try:
             cards = generate_cards_from_text(chunk, subject=subject)
-            all_cards.extend(cards)
-            print(f" → {len(cards)} cards ✓")
+            
+            # Filter out low-quality cards
+            quality_cards = [c for c in cards if len(c['front'].split()) >= 4 and len(c['back'].split()) >= 6]
+            
+            all_cards.extend(quality_cards)
+            print(f" → {len(quality_cards)} quality cards ✓")
         except Exception as e:
             print(f" → Error: {e}")
             continue
     
+    # Remove duplicate cards (same front question)
+    seen_fronts = set()
+    unique_cards = []
+    for card in all_cards:
+        front_key = card['front'].lower().strip()
+        if front_key not in seen_fronts:
+            seen_fronts.add(front_key)
+            unique_cards.append(card)
+    
+    if len(all_cards) > len(unique_cards):
+        print(f"  ℹ Removed {len(all_cards) - len(unique_cards)} duplicate cards")
+    
     # Sort by difficulty
-    print(f"\n📊 Sorting {len(all_cards)} cards by difficulty...")
-    sorted_cards = sort_cards_by_difficulty(all_cards)
+    print(f"\n📊 Sorting {len(unique_cards)} cards by difficulty...")
+    sorted_cards = sort_cards_by_difficulty(unique_cards)
     print(f"  ✓ Cards ordered: Beginner → Intermediate → Advanced")
+    
+    # Print quality summary
+    difficulty_counts = {}
+    for card in sorted_cards:
+        diff = card.get('difficulty', 'intermediate')
+        difficulty_counts[diff] = difficulty_counts.get(diff, 0) + 1
+    
+    print(f"\n📈 Quality Summary:")
+    print(f"  • Beginner: {difficulty_counts.get('beginner', 0)} cards")
+    print(f"  • Intermediate: {difficulty_counts.get('intermediate', 0)} cards")
+    print(f"  • Advanced: {difficulty_counts.get('advanced', 0)} cards")
+    print(f"  • Total: {len(sorted_cards)} high-quality cards")
     
     return sorted_cards
 
