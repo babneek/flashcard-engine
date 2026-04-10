@@ -18,60 +18,100 @@ const colorSchemes = {
     name: "Default",
     emoji: "🎨",
     light: {
-      background: "207 30% 96%",
-      primary: "200 60% 32%",
+      background: "210 40% 98%",
+      foreground: "222.2 84% 4.9%",
+      primary: "221.2 83.2% 53.3%",
+      secondary: "210 40% 96.1%",
+      accent: "210 40% 96.1%",
+      muted: "210 40% 96.1%",
     },
     dark: {
-      background: "210 68% 8%",
-      primary: "174 50% 55%",
+      background: "222.2 84% 4.9%",
+      foreground: "210 40% 98%",
+      primary: "217.2 91.2% 59.8%",
+      secondary: "217.2 32.6% 17.5%",
+      accent: "217.2 32.6% 17.5%",
+      muted: "217.2 32.6% 17.5%",
     }
   },
   clay: {
     name: "Clay",
     emoji: "🏺",
     light: {
-      background: "30 40% 96%",
-      primary: "25 75% 47%",
+      background: "30 40% 98%",
+      foreground: "20 14.3% 4.1%",
+      primary: "24.6 95% 53.1%",
+      secondary: "30 40% 96.1%",
+      accent: "30 40% 96.1%",
+      muted: "30 40% 96.1%",
     },
     dark: {
-      background: "25 30% 12%",
-      primary: "30 80% 55%",
+      background: "20 14.3% 4.1%",
+      foreground: "30 40% 98%",
+      primary: "20.5 90.2% 48.2%",
+      secondary: "12 6.5% 15.1%",
+      accent: "12 6.5% 15.1%",
+      muted: "12 6.5% 15.1%",
     }
   },
   ocean: {
     name: "Ocean",
     emoji: "🌊",
     light: {
-      background: "200 40% 96%",
-      primary: "195 85% 41%",
+      background: "200 40% 98%",
+      foreground: "200 50% 10%",
+      primary: "199 89% 48%",
+      secondary: "200 40% 96.1%",
+      accent: "200 40% 96.1%",
+      muted: "200 40% 96.1%",
     },
     dark: {
-      background: "200 50% 8%",
-      primary: "190 80% 50%",
+      background: "200 50% 10%",
+      foreground: "200 40% 98%",
+      primary: "198 93% 60%",
+      secondary: "200 50% 15%",
+      accent: "200 50% 15%",
+      muted: "200 50% 15%",
     }
   },
   forest: {
     name: "Forest",
     emoji: "🌲",
     light: {
-      background: "140 30% 96%",
-      primary: "145 63% 32%",
+      background: "140 30% 98%",
+      foreground: "140 50% 10%",
+      primary: "142 71% 45%",
+      secondary: "140 30% 96.1%",
+      accent: "140 30% 96.1%",
+      muted: "140 30% 96.1%",
     },
     dark: {
-      background: "145 40% 8%",
-      primary: "140 60% 45%",
+      background: "140 50% 10%",
+      foreground: "140 30% 98%",
+      primary: "142 76% 36%",
+      secondary: "140 50% 15%",
+      accent: "140 50% 15%",
+      muted: "140 50% 15%",
     }
   },
   sunset: {
     name: "Sunset",
     emoji: "🌅",
     light: {
-      background: "20 40% 96%",
-      primary: "340 75% 55%",
+      background: "20 40% 98%",
+      foreground: "340 50% 10%",
+      primary: "346 77% 50%",
+      secondary: "20 40% 96.1%",
+      accent: "20 40% 96.1%",
+      muted: "20 40% 96.1%",
     },
     dark: {
-      background: "340 30% 10%",
-      primary: "340 70% 60%",
+      background: "340 50% 10%",
+      foreground: "20 40% 98%",
+      primary: "346 83% 47%",
+      secondary: "340 50% 15%",
+      accent: "340 50% 15%",
+      muted: "340 50% 15%",
     }
   }
 };
@@ -103,10 +143,14 @@ export function ThemeToggle() {
       root.classList.remove("dark");
     }
 
-    // Apply color scheme
+    // Apply color scheme - update all CSS variables
     const colors = colorSchemes[scheme][newTheme];
     root.style.setProperty("--background", colors.background);
+    root.style.setProperty("--foreground", colors.foreground);
     root.style.setProperty("--primary", colors.primary);
+    root.style.setProperty("--secondary", colors.secondary);
+    root.style.setProperty("--accent", colors.accent);
+    root.style.setProperty("--muted", colors.muted);
   };
 
   const toggleTheme = () => {
