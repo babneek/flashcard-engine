@@ -8,7 +8,7 @@
 
 ## 🔗 Live Deployment
 
-- **Frontend:** https://flashcard-engine-tac.vercel.app
+- **Frontend:** https://flashcard-engine-lac.vercel.app
 - **Backend API:** https://flashcard-engine-api.onrender.com
 - **API Documentation:** https://flashcard-engine-api.onrender.com/docs
 - **GitHub Repository:** https://github.com/babneek/flashcard-engine
@@ -545,7 +545,7 @@ Flashcard apps are notoriously boring. Here's how I made this one enjoyable:
 
 ## 🚀 Try It Yourself
 
-1. Visit: https://flashcard-engine-tac.vercel.app
+1. Visit: https://flashcard-engine-lac.vercel.app
 2. Register with any email
 3. Create a deck
 4. Upload a PDF 

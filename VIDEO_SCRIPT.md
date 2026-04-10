@@ -265,7 +265,7 @@ But in one week, I'm proud of what I built. It's deployed, it works, and it genu
 **[Show the URLs on screen]**
 
 "Try it yourself:
-- Frontend: flashcard-engine-tac.vercel.app
+- Frontend: flashcard-engine-lac.vercel.app
 - GitHub: github.com/babneek/flashcard-engine
 
 Thanks for watching!"
