@@ -13,3 +13,7 @@ services:
         value: 3.11.0
       - key: GROQ_API_KEY
         sync: false
+      - key: FRONTEND_URL
+        value: https://flashcard-engine-tac.vercel.app
+      - key: JWT_SECRET
+        value: flashcard-engine-super-secret-jwt-key-2026

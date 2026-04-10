@@ -51,3 +51,34 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/debug/config")
+def debug_config():
+    """Check if API keys and config are loaded correctly."""
+    from config import GROQ_API_KEY, DATABASE_URL
+    return {
+        "groq_configured": bool(GROQ_API_KEY),
+        "groq_key_prefix": GROQ_API_KEY[:8] + "..." if GROQ_API_KEY else "NOT SET",
+        "database": "postgresql" if "postgresql" in DATABASE_URL else "sqlite",
+        "allowed_origins": ALLOWED_ORIGINS,
+    }
+
+
+@app.get("/debug/test-groq")
+def test_groq():
+    """Test Groq API connection directly."""
+    from config import GROQ_API_KEY
+    if not GROQ_API_KEY:
+        return {"status": "error", "message": "GROQ_API_KEY not set"}
+    try:
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": "Say 'Groq works!' and nothing else."}],
+            max_tokens=20,
+        )
+        return {"status": "ok", "response": response.choices[0].message.content}
+    except Exception as e:
+        return {"status": "error", "message": str(e), "type": type(e).__name__}

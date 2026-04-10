@@ -277,49 +277,52 @@ def generate_cards_from_topics(topics: list[dict], subject: str = "general") -> 
 def generate_cards_from_text(text: str, topic_context: str = None, subject: str = "general") -> list[dict]:
     """
     Generate flashcards from text using Groq API.
-    Falls back to rule-based generation if API key is not configured.
-    
-    Args:
-        text: Text content to generate cards from
-        topic_context: Optional topic name for context
-        subject: Subject type for appropriate prompt selection
+    Falls back to rule-based generation only if API key is missing.
     """
-    if GROQ_API_KEY:
-        try:
-            return _generate_with_groq(text, topic_context, subject)
-        except Exception as e:
-            print(f"Groq generation failed: {e}, falling back to rule-based")
+    if not GROQ_API_KEY:
+        print("⚠ No GROQ_API_KEY found - using rule-based fallback")
+        return _generate_rule_based(text, topic_context, subject)
 
-    return _generate_rule_based(text, topic_context, subject)
+    try:
+        cards = _generate_with_groq(text, topic_context, subject)
+        if cards:
+            return cards
+        print("⚠ Groq returned 0 cards - using rule-based fallback")
+        return _generate_rule_based(text, topic_context, subject)
+    except Exception as e:
+        print(f"❌ Groq generation FAILED: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        print("⚠ Falling back to rule-based generation")
+        return _generate_rule_based(text, topic_context, subject)
 
 
 def _generate_with_groq(text: str, topic_context: str = None, subject: str = "general") -> list[dict]:
-    """Generate cards using Groq API (OpenAI-compatible)."""
+    """Generate cards using Groq API."""
     from groq import Groq
 
+    print(f"  🤖 Calling Groq API (key: {GROQ_API_KEY[:8]}...) model: llama-3.3-70b-versatile")
     client = Groq(api_key=GROQ_API_KEY)
     
-    # Get subject-specific prompt
     prompt_template = get_prompt_for_subject(subject)
-    
-    # Add topic context to text if available
     text_with_context = f"TOPIC: {topic_context}\n\n{text}" if topic_context else text
-    
-    # Format the prompt
     prompt = prompt_template.format(text_excerpt=text_with_context[:3500])
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": f"You are an expert {subject} educator. Generate high-quality flashcards. Return only valid JSON."},
+            {"role": "system", "content": f"You are an expert {subject} educator. Generate high-quality flashcards. Return ONLY valid JSON array, no other text."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.3,
-        max_tokens=2500,
+        max_tokens=3000,
     )
 
     content = response.choices[0].message.content.strip()
-    return _parse_cards_json(content)
+    print(f"  ✅ Groq responded ({len(content)} chars)")
+    cards = _parse_cards_json(content)
+    print(f"  ✅ Parsed {len(cards)} valid cards from Groq")
+    return cards
 
 
 def _generate_rule_based(text: str, topic_context: str = None, subject: str = "general") -> list[dict]:
